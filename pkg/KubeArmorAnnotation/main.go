@@ -19,10 +19,14 @@ package main
 import (
 	"KubeArmorAnnotation/handlers"
 	"flag"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	"github.com/go-logr/logr"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"k8s.io/apimachinery/pkg/runtime"
@@ -90,8 +94,9 @@ func main() {
 	setupLog.Info("Adding mutation webhook")
 	mgr.GetWebhookServer().Register("/mutate-pods", &webhook.Admission{
 		Handler: &handlers.PodAnnotator{
-			Client: mgr.GetClient(),
-			Logger: setupLog,
+			Client:   mgr.GetClient(),
+			Logger:   setupLog,
+			Enforcer: detectEnforcer(setupLog),
 		},
 	})
 	setupLog.Info("starting manager")
@@ -99,4 +104,30 @@ func main() {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}
+}
+
+// detect the enforcer on the node
+func detectEnforcer(logger logr.Logger) string {
+	lsm := []byte{}
+	lsmPath := "/sys/kernel/security/lsm"
+
+	if _, err := os.Stat(filepath.Clean(lsmPath)); err == nil {
+		lsm, err = ioutil.ReadFile(lsmPath)
+		if err != nil {
+			logger.Info("Failed to read /sys/kernel/security/lsm " + err.Error())
+			return ""
+		}
+	}
+
+	enforcer := string(lsm)
+
+	if strings.Contains(enforcer, "apparmor") {
+		logger.Info("Detected AppArmor as the cluster Enforcer")
+		return "AppArmor"
+	} else if strings.Contains(enforcer, "selinux") {
+		logger.Info("Detected SELinux as the cluster Enforcer")
+		return "SELinux"
+	}
+	logger.Info("No enforcer was detected")
+	return ""
 }

@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: ttl.sh/webhook
-  newTag: v1.1
+  newTag: v0.26

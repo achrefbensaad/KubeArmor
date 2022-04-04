@@ -16,14 +16,19 @@ spec:
   selector:
     matchLabels:
       control-plane: controller-manager
-  replicas: 1
+  replicas: 2
   template:
     metadata:
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/manager: unconfined
       labels:
         control-plane: controller-manager
     spec:
-      securityContext:
-        runAsNonRoot: true
+      volumes:
+      - name: sys-path
+        hostPath:
+          path: /sys/kernel/security
+          type: Directory
       containers:
       - command:
         - /manager
@@ -31,6 +36,9 @@ spec:
         - --leader-elect
         image: controller:latest
         name: manager
+        volumeMounts:
+          - mountPath: /sys/kernel/security
+            name: sys-path
         securityContext:
           allowPrivilegeEscalation: false
         livenessProbe:

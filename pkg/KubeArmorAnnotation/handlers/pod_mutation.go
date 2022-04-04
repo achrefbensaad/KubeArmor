@@ -13,24 +13,26 @@ import (
 )
 
 type PodAnnotator struct {
-	Client  client.Client
-	decoder *admission.Decoder
-	Logger  logr.Logger
+	Client   client.Client
+	decoder  *admission.Decoder
+	Logger   logr.Logger
+	Enforcer string
 }
 
 const k8sVisibility = "none"
+const appArmorAnnotation = "container.apparmor.security.beta.kubernetes.io/"
+const seLinuxAnnotation = "kubearmor-selinux/"
 
 // +kubebuilder:webhook:path=/mutate-pods,mutating=true,failurePolicy=Fail,groups="",resources=pods,verbs=create;update,versions=v1,name=annotation.kubearmor.com,admissionReviewVersions=v1,sideEffects=NoneOnDryRun
 
 func (a *PodAnnotator) Handle(ctx context.Context, req admission.Request) admission.Response {
 	pod := &corev1.Pod{}
-	log := a.Logger
-	log.Info("Heree 1")
 	err := a.decoder.Decode(req, pod)
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-
+	// Decode will omit the namespace value for some reason copying it manually
+	pod.Namespace = req.Namespace
 	if pod.Annotations == nil {
 		pod.Annotations = map[string]string{}
 	}
@@ -71,42 +73,22 @@ func (a *PodAnnotator) Handle(ctx context.Context, req admission.Request) admiss
 		pod.Annotations["kubearmor-policy"] = "audited"
 	}
 
+	// == No enforcer is detected == //
+	if a.Enforcer == "" {
+		pod.Annotations["kubearmor-policy"] = "audited"
+	}
+
 	// == Visibility == //
 
 	if _, ok := pod.Annotations["kubearmor-visibility"]; !ok {
 		pod.Annotations["kubearmor-visibility"] = k8sVisibility
 	}
 
-	// == Add kubearmor annotations == //
-
-	// Get existant kubearmor annotations
-	appArmorAnnotations := map[string]string{}
-	for k, v := range pod.Annotations {
-		if strings.HasPrefix(k, "container.apparmor.security.beta.kubernetes.io/") {
-			if v == "unconfined" {
-				containerName := strings.Split(k, "/")[1]
-				appArmorAnnotations[containerName] = v
-			} else {
-				containerName := strings.Split(k, "/")[1]
-				appArmorAnnotations[containerName] = strings.Split(v, "/")[1]
-			}
-		}
-	}
-
-	// Get the remaining containers / not addressed explecitly in the annotation
-	for _, container := range pod.Spec.Containers {
-		if _, ok := appArmorAnnotations[container.Name]; !ok {
-			appArmorAnnotations[container.Name] = "kubearmor-" + pod.Namespace + "-" + container.Name
-		}
-	}
-
-	// Add kubearmor annotations to the pod
-
-	for k, v := range appArmorAnnotations {
-		if v == "unconfined" {
-			continue
-		}
-		pod.Annotations["container.apparmor.security.beta.kubernetes.io/"+k] = "localhost/" + v
+	// == Enforcer annotations == //
+	if a.Enforcer == "AppArmor" {
+		appArmorAnnotator(pod)
+	} else if a.Enforcer == "SELinux" {
+		seLinuxAnnotator(pod)
 	}
 
 	// send the mutation response
@@ -115,4 +97,92 @@ func (a *PodAnnotator) Handle(ctx context.Context, req admission.Request) admiss
 		return admission.Errored(http.StatusInternalServerError, err)
 	}
 	return admission.PatchResponseFromRaw(req.Object.Raw, marshaledPod)
+}
+
+// to get a decoder injected for us
+func (a *PodAnnotator) InjectDecoder(d *admission.Decoder) error {
+	a.decoder = d
+	return nil
+}
+
+// == Add AppArmor annotations == //
+func appArmorAnnotator(pod *corev1.Pod) {
+
+	// remove incompatible annotations if exist, seLinux
+	for k := range pod.Annotations {
+		if strings.HasPrefix(k, seLinuxAnnotation) {
+			delete(pod.Annotations, k)
+		}
+	}
+
+	// Get existant kubearmor annotations
+	podAnnotations := map[string]string{}
+	for k, v := range pod.Annotations {
+		if strings.HasPrefix(k, appArmorAnnotation) {
+			if v == "unconfined" {
+				containerName := strings.Split(k, "/")[1]
+				podAnnotations[containerName] = v
+			} else {
+				containerName := strings.Split(k, "/")[1]
+				podAnnotations[containerName] = strings.Split(v, "/")[1]
+			}
+		}
+	}
+
+	// Get the remaining containers / not addressed explecitly in the annotation
+	for _, container := range pod.Spec.Containers {
+		if _, ok := podAnnotations[container.Name]; !ok {
+			podAnnotations[container.Name] = "kubearmor-" + pod.Namespace + "-" + container.Name
+		}
+	}
+
+	// Add kubearmor annotations to the pod
+
+	for k, v := range podAnnotations {
+		if v == "unconfined" {
+			continue
+		}
+		pod.Annotations[appArmorAnnotation+k] = "localhost/" + v
+	}
+}
+
+// == Add SeLinux annotations == //
+func seLinuxAnnotator(pod *corev1.Pod) {
+
+	// remove incompatible annotations if exist, apparmor
+	for k := range pod.Annotations {
+		if strings.HasPrefix(k, appArmorAnnotation) {
+			delete(pod.Annotations, k)
+		}
+	}
+
+	// Get existant kubearmor annotations
+	podAnnotations := map[string]string{}
+	for k, v := range pod.Annotations {
+		if strings.HasPrefix(k, seLinuxAnnotation) {
+			if v == "unconfined" {
+				containerName := strings.Split(k, "/")[1]
+				podAnnotations[containerName] = v
+			} else {
+				containerName := strings.Split(k, "/")[1]
+				podAnnotations[containerName] = strings.Split(v, "/")[1]
+			}
+		}
+	}
+
+	// Get the remaining containers / not addressed explecitly in the annotation
+	for _, container := range pod.Spec.Containers {
+		if _, ok := podAnnotations[container.Name]; !ok {
+			podAnnotations[container.Name] = "kubearmor-" + pod.Namespace + "-" + container.Name
+		}
+	}
+
+	// Add kubearmor annotations to the pod
+
+	for k, v := range podAnnotations {
+		if v == "unconfined" {
+			continue
+		}
+		pod.Annotations[seLinuxAnnotation+k] = v
+	}
 }
