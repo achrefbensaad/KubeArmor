@@ -12,5 +12,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: ttl.sh/webhook
-  newTag: v0.26
+  newName: 192.168.81.128:5000/webhook
+  newTag: v0.18

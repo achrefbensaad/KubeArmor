@@ -31,8 +31,11 @@ func (a *PodAnnotator) Handle(ctx context.Context, req admission.Request) admiss
 	if err != nil {
 		return admission.Errored(http.StatusBadRequest, err)
 	}
-	// Decode will omit the namespace value for some reason copying it manually
-	pod.Namespace = req.Namespace
+	// Decode will omit sometimes the namespace value for some reason copying it manually
+	if pod.Namespace == "" {
+		pod.Namespace = req.Namespace
+	}
+
 	if pod.Annotations == nil {
 		pod.Annotations = map[string]string{}
 	}

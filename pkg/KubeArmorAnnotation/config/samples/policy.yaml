@@ -1,0 +1,15 @@
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: ksp-group-1-proc-path-block
+spec:
+  severity: 5
+  message: "block the sleep command"
+  selector:
+    matchLabels:
+      name: test01
+  process:
+    matchPaths:
+    - path: /bin/sleep # try sleep 1 (permission denied)
+  action:
+    Block

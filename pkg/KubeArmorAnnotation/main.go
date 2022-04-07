@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"KubeArmorAnnotation/controllers"
 	"KubeArmorAnnotation/handlers"
 	"flag"
 	"io/ioutil"
@@ -99,6 +100,15 @@ func main() {
 			Enforcer: detectEnforcer(setupLog),
 		},
 	})
+
+	if err = (&controllers.PodRefresherReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Pod")
+		os.Exit(1)
+	}
+
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
