@@ -62,31 +62,6 @@ jobs:
 
       - name: Install annotation controller
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          RELEASE=$(lsb_release -cs)
-          if [ "$RELEASE" == "impish" ]; then
-              RELEASE="focal"
-          fi
-          sudo apt-get install -y software-properties-common
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable"
-          sudo apt-get update
-          sudo apt-cache policy docker-ce
-          sudo apt install -y docker-ce
-          sudo mkdir -p /etc/docker
-          cat <<EOF | sudo tee /etc/docker/daemon.json
-          {
-            "exec-opts": ["native.cgroupdriver=systemd"],
-            "log-driver": "json-file",
-            "log-opts": {
-              "max-size": "100m"
-            },
-            "storage-driver": "overlay2"
-          }
-          EOF
-          sudo systemctl restart docker
-          sudo chmod 666 /var/run/docker.sock
           pushd $(pwd)
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
           cd pkg/KubeArmorAnnotation
