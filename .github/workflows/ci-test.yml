@@ -68,7 +68,7 @@ jobs:
           make docker-build  IMG=webhook
           make deploy IMG=webhook
           sleep 10
-          kubectl get po -A
+          kubectl describe po -n kubearmorannotation-system
           popd
       - name: Test KubeArmor
         run: ./tests/test-scenarios-github.sh
