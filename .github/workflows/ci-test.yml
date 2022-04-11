@@ -68,7 +68,7 @@ jobs:
           make docker-build  IMG=webhook
           docker save --output webhook-img.tar webhook
           sudo k3s ctr images import webhook-img.tar
-          make deploy IMG=webhook
+          make deploy IMG=ttl.sh/webhook
           sleep 10
           kubectl describe po -n kubearmorannotation-system
           popd
