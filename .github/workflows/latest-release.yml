@@ -42,6 +42,7 @@ jobs:
       
       - name: Install annotation controller
         run: |
+          echo "just to re-run the pipeline"
           apt install -y docker
           pushd $(pwd)
           docker ps
