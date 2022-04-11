@@ -62,7 +62,7 @@ jobs:
 
       - name: Install annotation controller
         run: |
-          apt install -y docker
+          sudo apt install -y docker
           pushd $(pwd)
           docker ps
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
@@ -71,6 +71,7 @@ jobs:
           make deploy IMG=webhook
           sleep 5
           kubectl get -A
+          popd
       - name: Test KubeArmor
         run: ./tests/test-scenarios-github.sh
         timeout-minutes: 15
