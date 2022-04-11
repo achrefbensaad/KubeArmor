@@ -60,6 +60,17 @@ jobs:
       - name: Run kubectl proxy
         run: kubectl proxy &
 
+      - name: Install annotation controller
+        run: |
+          apt install -y docker
+          pushd $(pwd)
+          docker ps
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+          cd pkg/KubeArmorAnnotation
+          make docker-build  IMG=webhook
+          make deploy IMG=webhook
+          sleep 5
+          kubectl get -A
       - name: Test KubeArmor
         run: ./tests/test-scenarios-github.sh
         timeout-minutes: 15
