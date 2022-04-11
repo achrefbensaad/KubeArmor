@@ -62,9 +62,9 @@ jobs:
 
       - name: Install annotation controller
         run: |
-          sudo apt install -y docker
+          sudo apt install -y docker-ce
+          sudo chmod 666 /var/run/docker.sock
           pushd $(pwd)
-          docker ps
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
           cd pkg/KubeArmorAnnotation
           make docker-build  IMG=webhook
