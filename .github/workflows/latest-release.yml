@@ -39,7 +39,19 @@ jobs:
       - name: Generate KubeArmor artifacts
         run: |
             GITHUB_SHA=$GITHUB_SHA ./KubeArmor/build/build_kubearmor.sh ${{ steps.vars.outputs.tag }}
-
+      
+      - name: Install annotation controller
+        run: |
+          apt install -y docker
+          pushd $(pwd)
+          docker ps
+          kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+          cd pkg/KubeArmorAnnotation
+          make docker-build  IMG=webhook
+          make deploy IMG=webhook
+          sleep 5
+          kubectl get pods -A
+      
       - name: Run KubeArmor
         run: |
             sed -i 's|kubearmor/kubearmor:latest|kubearmor/kubearmor:'${{ steps.vars.outputs.tag }}'|' ./KubeArmor/build/kubearmor-test-k3s.yaml
