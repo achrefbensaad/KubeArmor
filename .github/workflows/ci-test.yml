@@ -65,7 +65,7 @@ jobs:
           pushd $(pwd)
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
           cd pkg/KubeArmorAnnotation
-          make docker-build  IMG=ttl.sh/webhook
+          make docker-build  docker-push IMG=ttl.sh/webhook
           make deploy IMG=ttl.sh/webhook
           sleep 10
           kubectl describe po -n kubearmorannotation-system
