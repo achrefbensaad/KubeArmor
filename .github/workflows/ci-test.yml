@@ -82,8 +82,8 @@ jobs:
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
           cd pkg/KubeArmorAnnotation
           REGIP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')
-          make docker-build  docker-push IMG=$REGIP/webhook
-          make deploy IMG=$REGIP/webhook
+          make docker-build  docker-push IMG=$REGIP:5000/webhook
+          make deploy IMG=$REGIP:5000/webhook
           sleep 10
           kubectl describe po -n kubearmorannotation-system
           popd
