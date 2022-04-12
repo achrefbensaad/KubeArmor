@@ -34,7 +34,16 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Self hosted docker registry
-        run: docker run -d -p 0.0.0.0:5000:5000 --restart=always --name registry registry:2
+        run: |
+          docker run -d -p 0.0.0.0:5000:5000 --restart=always --name registry registry:2
+          REGIP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')
+          sudo cat <<EOF > /etc/docker/daemon.json
+          {
+            "insecure-registries" : ["$REGIP:5000"]
+          }
+          EOF
+          sudo cat /etc/docker/daemon.json
+          sudo systemctl restart docker.service 
 
       - name: Get registry IP
         run: ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'
@@ -74,8 +83,9 @@ jobs:
           pushd $(pwd)
           kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
           cd pkg/KubeArmorAnnotation
-          make docker-build  docker-push IMG=ttl.sh/webhook
-          make deploy IMG=ttl.sh/webhook
+          REGIP=$(ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p')
+          make docker-build  docker-push IMG=$REGIP/webhook
+          make deploy IMG=$REGIP/webhook
           sleep 10
           kubectl describe po -n kubearmorannotation-system
           popd
