@@ -33,6 +33,15 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Self hosted docker registry
+        run: docker run -d -p 0.0.0.05000:5000 --restart=always --name registry registry:2
+
+      - name: Get registry IP
+        run: ip -o route get to 8.8.8.8 | sed -n 's/.*src \([0-9.]\+\).*/\1/p'
+
+      - name: Error out
+        run: cat /idonotexist
+        
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
