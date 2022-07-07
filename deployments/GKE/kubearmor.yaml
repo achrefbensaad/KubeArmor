@@ -103,6 +103,7 @@ spec:
         - containerPort: 32767
         securityContext:
           privileged: true
+          readOnlyRootFilesystem: true
         terminationMessagePath: /dev/termination-log
         terminationMessagePolicy: File
         volumeMounts:
@@ -118,6 +119,8 @@ spec:
         - mountPath: /media/root/etc/os-release
           name: os-release-path
           readOnly: true
+        - mountPath: /tmp
+          name: tmp-path
         - mountPath: /media/root/usr
           name: usr-src-path
           readOnly: true
@@ -163,6 +166,8 @@ spec:
           path: /etc/os-release
           type: File
         name: os-release-path
+      - emptyDir: {}
+        name: tmp-path
       - hostPath:
           path: /usr
           type: Directory
@@ -236,6 +241,8 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        securityContext:
+          readOnlyRootFilesystem: true
       - args:
         - --metrics-addr=127.0.0.1:8080
         - --enable-leader-election
@@ -250,6 +257,8 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        securityContext:
+          readOnlyRootFilesystem: true
       serviceAccountName: kubearmor
       terminationGracePeriodSeconds: 10
 ---
@@ -305,6 +314,8 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        securityContext:
+          readOnlyRootFilesystem: true
       - args:
         - --metrics-addr=127.0.0.1:8080
         - --enable-leader-election
@@ -319,6 +330,8 @@ spec:
           requests:
             cpu: 100m
             memory: 20Mi
+        securityContext:
+          readOnlyRootFilesystem: true
       serviceAccountName: kubearmor
       terminationGracePeriodSeconds: 10
 ---

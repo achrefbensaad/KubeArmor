@@ -166,6 +166,7 @@ func GetPolicyManagerService(namespace string) *corev1.Service {
 
 // GetPolicyManagerDeployment Function
 func GetPolicyManagerDeployment(namespace string) *appsv1.Deployment {
+	var readOnlyRootFilesystem = bool(true)
 	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
@@ -206,6 +207,9 @@ func GetPolicyManagerDeployment(namespace string) *appsv1.Deployment {
 									Name:          "https",
 								},
 							},
+							SecurityContext: &corev1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
+							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("100m"),
@@ -225,6 +229,9 @@ func GetPolicyManagerDeployment(namespace string) *appsv1.Deployment {
 								"--enable-leader-election",
 							},
 							Command: []string{"/manager"},
+							SecurityContext: &corev1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
+							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("100m"),
@@ -275,6 +282,7 @@ func GetHostPolicyManagerService(namespace string) *corev1.Service {
 
 // GetHostPolicyManagerDeployment Function
 func GetHostPolicyManagerDeployment(namespace string) *appsv1.Deployment {
+	var readOnlyRootFilesystem = bool(true)
 	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Deployment",
@@ -315,6 +323,9 @@ func GetHostPolicyManagerDeployment(namespace string) *appsv1.Deployment {
 									Name:          "https",
 								},
 							},
+							SecurityContext: &corev1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
+							},
 							Resources: corev1.ResourceRequirements{
 								Limits: corev1.ResourceList{
 									corev1.ResourceCPU:    resource.MustParse("100m"),
@@ -344,6 +355,9 @@ func GetHostPolicyManagerDeployment(namespace string) *appsv1.Deployment {
 									corev1.ResourceMemory: resource.MustParse("20Mi"),
 								},
 							},
+							SecurityContext: &corev1.SecurityContext{
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
+							},
 						},
 					},
 					TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
@@ -360,6 +374,7 @@ func GenerateDaemonSet(env, namespace string) *appsv1.DaemonSet {
 		"kubearmor-app": kubearmor,
 	}
 	var privileged = bool(true)
+	var readOnlyRootFilesystem = bool(true)
 	var terminationGracePeriodSeconds = int64(30)
 	var args = []string{
 		"-gRPC=" + strconv.Itoa(int(port)),
@@ -388,6 +403,10 @@ func GenerateDaemonSet(env, namespace string) *appsv1.DaemonSet {
 			Name:      "os-release-path", //BPF (read-only)
 			MountPath: "/media/root/etc/os-release",
 			ReadOnly:  true,
+		},
+		{
+			Name:      "tmp-path",
+			MountPath: "/tmp",
 		},
 	}
 
@@ -435,6 +454,12 @@ func GenerateDaemonSet(env, namespace string) *appsv1.DaemonSet {
 					Path: "/etc/os-release",
 					Type: &hostPathFile,
 				},
+			},
+		},
+		{
+			Name: "tmp-path",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
 			},
 		},
 	}
@@ -486,7 +511,8 @@ func GenerateDaemonSet(env, namespace string) *appsv1.DaemonSet {
 							Image:           "kubearmor/kubearmor:stable",
 							ImagePullPolicy: "Always",
 							SecurityContext: &corev1.SecurityContext{
-								Privileged: &privileged,
+								Privileged:             &privileged,
+								ReadOnlyRootFilesystem: &readOnlyRootFilesystem,
 							},
 							Args: args,
 							Env:  envs,
