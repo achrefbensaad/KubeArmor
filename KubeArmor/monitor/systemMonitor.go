@@ -30,9 +30,11 @@ import (
 
 // System Call Numbers
 const (
-	SysOpen   = 2
-	SysOpenAt = 257
-	SysClose  = 3
+	SysOpen     = 2
+	SysOpenAt   = 257
+	SysClose    = 3
+	SysUnlink   = 87
+	SysUnlinkAt = 263
 
 	SysSocket  = 41
 	SysConnect = 42
@@ -222,10 +224,10 @@ func (mon *SystemMonitor) InitBPF() error {
 	mon.Logger.Print("Initialized the eBPF system monitor")
 
 	// sysPrefix := bcc.GetSyscallPrefix()
-	systemCalls := []string{"open", "openat", "execve", "execveat", "socket", "connect", "accept", "bind", "listen"}
+	systemCalls := []string{"open", "openat", "execve", "execveat", "socket", "connect", "accept", "bind", "listen", "unlink", "unlinkat"}
 	// {category, event}
 	sysTracepoints := [][2]string{{"syscalls", "sys_exit_openat"}}
-	sysKprobes := []string{"do_exit", "security_bprm_check", "security_file_open"}
+	sysKprobes := []string{"do_exit", "security_bprm_check", "security_file_open", "security_path_unlink"}
 
 	if mon.BpfModule != nil {
 
@@ -347,12 +349,10 @@ func (mon *SystemMonitor) TraceSyscall() {
 			if err != nil {
 				continue
 			}
-
 			args, err := GetArgs(dataBuff, ctx.Argnum)
 			if err != nil {
 				continue
 			}
-
 			containerID := ""
 
 			if ctx.PidID != 0 && ctx.MntID != 0 {
@@ -378,6 +378,14 @@ func (mon *SystemMonitor) TraceSyscall() {
 					continue
 				}
 			} else if ctx.EventID == SysOpenAt {
+				if len(args) != 3 {
+					continue
+				}
+			} else if ctx.EventID == SysUnlink {
+				if len(args) != 2 {
+					continue
+				}
+			} else if ctx.EventID == SysUnlinkAt {
 				if len(args) != 3 {
 					continue
 				}
