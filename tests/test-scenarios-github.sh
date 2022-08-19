@@ -331,6 +331,8 @@ function should_find_blocked_host_log() {
         echo $audit_log
         DBG "Found the log from logs"
     fi
+    kubectl describe pod -A
+    kubectl get pod -A
 }
 
 function run_test_scenario() {
