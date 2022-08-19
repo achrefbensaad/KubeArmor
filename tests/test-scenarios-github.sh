@@ -252,6 +252,7 @@ function should_not_find_any_log() {
         DBG "Found no log from logs"
     fi
     kubectl describe pod -A
+    sudo aa-status
     kubectl get pod -A
 }
 
@@ -270,6 +271,7 @@ function should_find_passed_log() {
         DBG "Found the log from logs"
     fi
     kubectl describe pod -A
+    sudo aa-status
     kubectl get pod -A
 }
 
@@ -288,6 +290,7 @@ function should_find_blocked_log() {
         DBG "Found the log from logs"
     fi
     kubectl describe pod -A
+    sudo aa-status
     kubectl get pod -A
 }
 
@@ -306,6 +309,7 @@ function should_not_find_any_host_log() {
         DBG "Found no log from logs"
     fi
     kubectl describe pod -A
+    sudo aa-status
     kubectl get pod -A
 }
 
@@ -324,6 +328,7 @@ function should_find_passed_host_log() {
         DBG "Found the log from logs"
     fi
     kubectl describe pod -A
+    sudo aa-status
     kubectl get pod -A
 }
 
@@ -342,6 +347,7 @@ function should_find_blocked_host_log() {
         DBG "Found the log from logs"
     fi
     kubectl describe pod -A
+    sudo aa-status
     kubectl get pod -A
 }
 
