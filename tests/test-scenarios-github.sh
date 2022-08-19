@@ -251,6 +251,8 @@ function should_not_find_any_log() {
         audit_log="<No Log>"
         DBG "Found no log from logs"
     fi
+    kubectl describe pod -A
+    kubectl get pod -A
 }
 
 function should_find_passed_log() {
@@ -267,6 +269,8 @@ function should_find_passed_log() {
         echo $audit_log
         DBG "Found the log from logs"
     fi
+    kubectl describe pod -A
+    kubectl get pod -A
 }
 
 function should_find_blocked_log() {
@@ -283,6 +287,8 @@ function should_find_blocked_log() {
         echo $audit_log
         DBG "Found the log from logs"
     fi
+    kubectl describe pod -A
+    kubectl get pod -A
 }
 
 function should_not_find_any_host_log() {
@@ -299,6 +305,8 @@ function should_not_find_any_host_log() {
         audit_log="<No Log>"
         DBG "Found no log from logs"
     fi
+    kubectl describe pod -A
+    kubectl get pod -A
 }
 
 function should_find_passed_host_log() {
@@ -315,6 +323,8 @@ function should_find_passed_host_log() {
         echo $audit_log
         DBG "Found the log from logs"
     fi
+    kubectl describe pod -A
+    kubectl get pod -A
 }
 
 function should_find_blocked_host_log() {
