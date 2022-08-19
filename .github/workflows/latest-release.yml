@@ -21,7 +21,7 @@ name: Create KubeArmor release after testing the image
 jobs:
   build:
     name: Create KubeArmor latest release - 20.04
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     timeout-minutes: 20
     env:
       RUNTIME: "containerd"
@@ -82,7 +82,7 @@ jobs:
     name: Create KubeArmor stable version release - 20.04
     needs: build
     if: github.ref != 'refs/heads/main'
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     timeout-minutes: 20
     steps:
       - name: Checkout KubeArmor code
