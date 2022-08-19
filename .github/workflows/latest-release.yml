@@ -65,7 +65,8 @@ jobs:
             kubectl get pod -A 
             kubectl describe pod -A
             ./tests/test-scenarios-github.sh ${{ steps.vars.outputs.tag }} || true
-            kubectl logs -n kube-system $(kubectl get pod -n kube-system -o name --no-headers -l kubearmor-app=kubearmor-annotation-manager)
+            kubectl logs -n kube-system $(kubectl get pod -n kube-system -o name --no-headers -l kubearmor-app=kubearmor-annotation-manager) >> /tmp/kubearmor/annon.log
+            kubectl logs -n kube-system $(kubectl get pod -n kube-system -o name --no-headers -l kubearmor-app=kubearmor) >> /tmp/kubearmor/kubearmor.log
 
             exit 1
 
@@ -78,7 +79,7 @@ jobs:
       - name: Push KubeArmor images to Docker
         run: |
             ./KubeArmor/build/push_kubearmor.sh ${{ steps.vars.outputs.tag }}
-            
+
       - name: Archive log artifacts
         if: ${{ failure() }}
         uses: actions/upload-artifact@v2
