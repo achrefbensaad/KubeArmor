@@ -54,8 +54,8 @@ jobs:
 
       - name: Run KubeArmor
         run: |
-            sed -i 's/kubearmor\/kubearmor:latest/kubearmor\/kubearmor:${{ steps.vars.outputs.tag }}/g' ./KubeArmor/build/kubearmor-test-k3s.yaml
-            kubectl apply -f ./KubeArmor/build/kubearmor-test-k3s.yaml
+            sed -i 's/kubearmor\/kubearmor:latest/kubearmor\/kubearmor:${{ steps.vars.outputs.tag }}/g' ./KubeArmor/build/kubearmor-test-containerd.yaml
+            kubectl apply -f ./KubeArmor/build/kubearmor-test-containerd.yaml
             kubectl get po -A
             kubectl wait --for=condition=ready --timeout=5m -n kube-system pod -l kubearmor-app=kubearmor
 
