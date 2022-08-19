@@ -61,7 +61,7 @@ jobs:
 
       - name: Test KubeArmor
         run: |
-            aa-status
+            sudo aa-status
             kubectl get pod -A 
             kubectl describe pod -A
             ./tests/test-scenarios-github.sh ${{ steps.vars.outputs.tag }} || true
