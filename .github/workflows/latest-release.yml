@@ -64,7 +64,7 @@ jobs:
             kubectl get pod -A 
             kubectl describe pod -A
             ./tests/test-scenarios-github.sh ${{ steps.vars.outputs.tag }} || true
-            kubectl logs -n kube-system $(kubect get pod -n kube-system -o name --no-headers -l kubearmor-app=kubearmor-annotation-manager)
+            kubectl logs -n kube-system $(kubectl get pod -n kube-system -o name --no-headers -l kubearmor-app=kubearmor-annotation-manager)
 
             exit 1
 
