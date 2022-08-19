@@ -60,6 +60,8 @@ jobs:
 
       - name: Test KubeArmor
         run: |
+            kubectl get pod -A 
+            kubectl describe pod -A
             ./tests/test-scenarios-github.sh ${{ steps.vars.outputs.tag }}
 
       - name: Login to Docker Hub
