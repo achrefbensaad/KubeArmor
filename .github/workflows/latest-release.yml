@@ -78,6 +78,15 @@ jobs:
       - name: Push KubeArmor images to Docker
         run: |
             ./KubeArmor/build/push_kubearmor.sh ${{ steps.vars.outputs.tag }}
+            
+      - name: Archive log artifacts
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: kubearmor.logs
+          path: |
+            /tmp/kubearmor/
+            /tmp/kubearmor.*
 
   push-stable-version:
     name: Create KubeArmor stable version release - 20.04
@@ -114,3 +123,4 @@ jobs:
         if: steps.match.outputs.tag == 'true'
         run: |
               ./KubeArmor/build/push_kubearmor.sh stable
+      
