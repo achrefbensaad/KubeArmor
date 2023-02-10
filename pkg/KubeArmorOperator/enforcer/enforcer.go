@@ -23,7 +23,7 @@ func DetectEnforcer(lsmOrder []string, PathPrefix string, log zap.SugaredLogger)
 		lsm, err = os.ReadFile(lsmPath)
 		if err != nil {
 			log.Info("Failed to read /sys/kernel/security/lsm " + err.Error())
-			return "NA"
+			return "na"
 		}
 	}
 

@@ -98,12 +98,7 @@ func snitch() {
 
 	// Detecting enforcer
 	nodeEnforcer := enforcer.DetectEnforcer(order, PathPrefix, *Logger)
-	if nodeEnforcer != "NA" {
-		Logger.Infof("Node enforcer is %s", nodeEnforcer)
-	} else {
-		Logger.Errorf("Not able to detect node enforcer")
-		os.Exit(1)
-	}
+	Logger.Infof("Node enforcer is %s", nodeEnforcer)
 
 	//Detecting runtime
 
