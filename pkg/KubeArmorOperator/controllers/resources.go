@@ -56,7 +56,7 @@ func generateDaemonset(name, enforcer, runtime, socket, runtimeStorage string) *
 	daemonset.Spec.Template.Spec.Volumes = vols
 	daemonset.Spec.Template.Spec.InitContainers[0].VolumeMounts = common.CommonVolumesMount
 	daemonset.Spec.Template.Spec.Containers[0].VolumeMounts = volMnts
-	daemonset.Spec.Template.Spec.Containers[0].Args = append(daemonset.Spec.Template.Spec.Containers[0].Args, "-criSocket=unix:///"+strings.ReplaceAll(socket, "_", "/"))
+	daemonset.Spec.Template.Spec.Containers[0].Args = append(daemonset.Spec.Template.Spec.Containers[0].Args, "-criSocket=unix:///"+strings.ReplaceAll(socket, "___", "/"))
 	daemonset = addOwnership(daemonset).(*appsv1.DaemonSet)
 	return daemonset
 }
@@ -72,7 +72,7 @@ func genEnforcerVolumes(enforcer string) (vol []corev1.Volume, volMnt []corev1.V
 func genRuntimeVolumes(runtime, runtimeSocket, runtimeStorage string) (vol []corev1.Volume, volMnt []corev1.VolumeMount) {
 	// lookup socket
 	for _, socket := range common.ContainerRuntimeSocketMap[runtime] {
-		if strings.ReplaceAll(socket[1:], "/", "_") == runtimeSocket {
+		if strings.ReplaceAll(socket[1:], "/", "___") == runtimeSocket {
 			vol = append(vol, corev1.Volume{
 				Name: runtime + "-socket",
 				VolumeSource: corev1.VolumeSource{
@@ -93,7 +93,7 @@ func genRuntimeVolumes(runtime, runtimeSocket, runtimeStorage string) (vol []cor
 	// lookup runtime storage location
 
 	for _, storageLocation := range common.RuntimeStorageVolumes[runtime] {
-		if strings.ReplaceAll(runtimeSocket[1:], "/", "_") == runtimeStorage {
+		if strings.ReplaceAll(runtimeSocket[1:], "/", "___") == runtimeStorage {
 			vol = append(vol, corev1.Volume{
 				Name: runtime + "-storage",
 				VolumeSource: corev1.VolumeSource{
