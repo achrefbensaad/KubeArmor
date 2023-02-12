@@ -120,9 +120,9 @@ func snitch() {
 	patchNode := metadata{}
 	patchNode.Metadata.Labels = map[string]string{}
 	patchNode.Metadata.Labels[common.RuntimeLabel] = runtime
-	patchNode.Metadata.Labels[common.SocketLabel] = strings.ReplaceAll(socket[1:], "/", "_")
+	patchNode.Metadata.Labels[common.SocketLabel] = strings.ReplaceAll(socket[1:], "/", "___")
 	patchNode.Metadata.Labels[common.EnforcerLabel] = nodeEnforcer
-	patchNode.Metadata.Labels[common.RuntimeStorageLabel] = strings.ReplaceAll(runtimeStorage[1:], "/", "_")
+	patchNode.Metadata.Labels[common.RuntimeStorageLabel] = strings.ReplaceAll(runtimeStorage[1:], "/", "___")
 	patchNode.Metadata.Labels[common.RandLabel] = rand.String(4)
 	patch, err := json.Marshal(patchNode)
 
