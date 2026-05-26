@@ -1741,6 +1741,7 @@ func (fd *Feeder) UpdateMatchedPolicy(log tp.Log) tp.Log {
 							if resource == domain || strings.HasPrefix(resource, domain+".") {
 								log.Resource = secPolicy.Resource // normalize log resource to the policy resource
 								matchedFlags = true
+								break
 							}
 							resourceSlice = resourceSlice[1:]
 						}
